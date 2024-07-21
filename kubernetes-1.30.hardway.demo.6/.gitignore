@@ -1,0 +1,13 @@
+UTILS/*tar.gz
+UTILS/jq-linux*
+UTILS/yq_linux*
+UTILS/virtctl
+IMAGES/cfssl*
+IMAGES/containerd-*
+IMAGES/kubectl.amd64.v1.30.2
+IMAGES/runc.amd64
+IMAGES/cfssljson_1.*
+IMAGES/*.tar.gz
+IMAGES/kubelet.amd64.*
+IMAGES/*.tgz
+IMAGES/kubeadm.amd64.*
