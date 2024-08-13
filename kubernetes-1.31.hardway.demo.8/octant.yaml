@@ -1,0 +1,142 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: octant
+  name: octant
+spec:
+  finalizers:
+  - kubernetes
+---
+# Source: octant/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: octant-readonly-sa
+  namespace: octant
+---
+# Source: octant/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: octant
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    app: octant
+  name: octant-readonly-everything
+rules:
+  - apiGroups:
+      - "*"
+    resources: ["*"]
+    verbs:
+      - "*"
+---
+# Source: octant/templates/clusterrole.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: octant-role-binding
+  namespace: octant
+  labels:
+    app: octant
+subjects:
+- kind: ServiceAccount
+  name: octant-readonly-sa
+  namespace: octant
+roleRef:
+  kind: ClusterRole
+  name: octant-readonly-everything
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: octant/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: octant-dashboard
+  namespace: octant
+  labels:
+    helm.sh/chart: octant-0.24.0
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: octant
+    app.kubernetes.io/instance: octant-dashboard
+---
+# Source: octant/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: octant-dashboard
+  namespace: octant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: octant
+      app.kubernetes.io/instance: octant-dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: octant
+        app.kubernetes.io/instance: octant-dashboard
+    spec:
+      serviceAccountName: octant-readonly-sa
+      securityContext:
+        fsGroup: 2000
+      initContainers:
+      containers:
+        - name: octant
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          image: "aleveille/octant-dashboard:v0.25.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: OCTANT_HTTP_PORT
+              value: "8000"
+            - name: OCTANT_PLUGINS_DIR
+              value: "/home/octant/.config/octant/plugins/"
+            - name: OCTANT_PLUGINS_LIST
+              value: ""
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            - name: tmp-mount
+              mountPath: /tmp
+            - name: plugins-mount
+              mountPath: "/home/octant/.config/octant/plugins/"
+              #readOnly: true
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: tmp-mount
+          emptyDir: {}
+        - name: plugins-mount
+
+          emptyDir: {}
