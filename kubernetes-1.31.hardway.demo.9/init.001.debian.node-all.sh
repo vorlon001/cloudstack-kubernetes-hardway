@@ -18,15 +18,15 @@ function check_error {
 
 export DEBIAN_FRONTEND=noninteractive
 
-export kube_version="v1.31.0"
-export kube_version2="1.31.0"
+export kube_version="v1.31.1"
+export kube_version2="1.31.1"
 export crictl_version="v1.31.1"
-export containerd_version="1.7.20"
+export containerd_version="1.7.22"
 export image_arch="amd64"
 export runc_version="1.1.13"
 export cni_version="1.5.1"
 export k8s_regestry="harbor.iblog.pro/registry.k8s.io"
-export etcd_version="3.5.15"
+export etcd_version="3.5.16"
 
 export LANG=ru_RU.UTF-8
 export VERSION=bookworm

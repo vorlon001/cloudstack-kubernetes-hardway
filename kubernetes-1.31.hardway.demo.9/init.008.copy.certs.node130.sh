@@ -64,6 +64,12 @@ scp /etc/kubernetes/pki/kube-proxy.* 192.168.200.132:/etc/kubernetes/pki
 
 
 
+ssh 192.168.200.140 mkdir -p /etc/kubernetes/pki/
+ssh 192.168.200.141 mkdir -p /etc/kubernetes/pki/
+ssh 192.168.200.142 mkdir -p /etc/kubernetes/pki/
+
+
 scp /etc/kubernetes/pki/ca* 192.168.200.140://etc/kubernetes/pki/
 scp /etc/kubernetes/pki/ca* 192.168.200.141://etc/kubernetes/pki/
 scp /etc/kubernetes/pki/ca* 192.168.200.142://etc/kubernetes/pki/
+
