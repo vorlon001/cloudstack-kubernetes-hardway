@@ -1,0 +1,58 @@
+
+
+
+global_defs {
+   router_id LVS_DEVEL
+   script_user username [groupname]
+   enable_script_security
+}
+
+vrrp_script check_apiserver {
+   script "/etc/keepalived/check_apiserver.sh"
+   # seconds between script invocations, (default: 1 second)
+   interval 2
+
+   # seconds after which script is considered to have failed
+   # timeout <INTEGER>
+
+   # required number of successes for KO transition
+   fall 2       # require 2 failures for KO
+   # required number of successes for OK transition
+   rise 2       # require 2 successes for OK
+
+   # adjust priority by this weight, (default: 0)
+   # For description of reverse, see track_script.
+   # 'weight 0 reverse' will cause the vrrp instance to be down when the
+   # script is up, and vice versa.
+   # weight <INTEGER:-253..253> [reverse]
+   weight -100
+
+   #  group default to group of user
+   # user USERNAME [GROUPNAME]
+   user root
+
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface enp1s0.800
+    virtual_router_id 50
+    advert_int 1
+    priority 170
+    authentication {
+        auth_type AH
+        auth_pass e470f126
+    }
+    virtual_ipaddress {
+      192.168.200.139/24  dev enp1s0.200 label enp1s0.200:1
+    }
+    unicast_src_ip 192.168.203.130
+    unicast_peer {
+       
+       192.168.203.131
+       192.168.203.132
+    }
+    track_script {
+        check_apiserver
+    }
+}
